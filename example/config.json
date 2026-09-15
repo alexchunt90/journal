@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "app": {
+    "title": "Journal",
+    "emoji": "📓"
+  },
+  "theme": {
+    "accent": "#A8C66C"
+  }
+}

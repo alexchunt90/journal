@@ -1,0 +1,21 @@
+# The build context is sent to the daemon in full, whether or not the
+# Dockerfile copies it.
+
+# Your data. State lives on a mounted volume, or in the bucket.
+data/
+state/
+config.json
+
+# Credentials. Never in an image.
+.env
+
+# Local noise.
+.git/
+.gitignore
+node_modules/
+*.sublime-workspace
+*.sublime-project
+.DS_Store
+test/
+scripts/
+README.md

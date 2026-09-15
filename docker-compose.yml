@@ -1,0 +1,29 @@
+services:
+  journal:
+    build: .
+    container_name: journal
+    restart: unless-stopped
+
+    # Published on loopback only. `tailscale serve` or a reverse proxy fronts
+    # it, so the port is never open on a public interface — which matters,
+    # because the app has no authentication of its own.
+    ports:
+      - "127.0.0.1:4176:4176"
+
+    volumes:
+      # Writable state when not using the bucket. Must be a DIRECTORY mount —
+      # saves write a temp file and rename, and rename fails against a
+      # bind-mounted file. The container runs as uid 1000, so:
+      #   sudo chown -R 1000:1000 state
+      - ./state:/state
+
+      # Source mounted read-only so edits do not need an image rebuild.
+      # public/ is picked up on a browser refresh; server.js needs
+      # `docker compose restart journal`. Drop these for a sealed image.
+      - ./server.js:/app/server.js:ro
+      - ./lib:/app/lib:ro
+      - ./public:/app/public:ro
+
+    env_file:
+      - path: .env
+        required: false

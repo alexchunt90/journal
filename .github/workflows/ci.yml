@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel a run that a newer push has already made irrelevant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 18 is the floor the code is written to; 22 is what the Docker image
+        # runs. Both, so neither drifts unnoticed.
+        node: ['18', '20', '22']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # No install step: the project has no dependencies, and keeping it that
+      # way is a stated goal. If one ever appears, add `npm ci` here.
+      - run: npm run lint
+      - run: npm test
+
+  # The suite exercises the app's own logic. This checks the thing the tests
+  # cannot: that nothing personal has crept back into the repository.
+  no-private-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: State files must stay untracked
+        run: |
+          # Checked one at a time: --error-unmatch over several paths at once
+          # fails as soon as any one of them is missing.
+          failed=0
+          for path in config.json data; do
+            if git ls-files --error-unmatch "$path" >/dev/null 2>&1; then
+              echo "::error::$path is tracked — it holds real data and must stay out of the repository"
+              failed=1
+            fi
+          done
+          [ "$failed" -eq 0 ] || exit 1
+
+      - name: No credentials or private hostnames
+        run: |
+          patterns='AKIA[0-9A-Z]{16}|aws_secret_access_key|-----BEGIN [A-Z ]*PRIVATE KEY-----|\.ts\.net'
+          # Excluded on purpose: .env.example and the README name these things
+          # to explain them, and this file has to contain the patterns it
+          # searches for. AKIAIOSFODNN7EXAMPLE is the key AWS publishes in its
+          # own signing examples — the SigV4 test pins a signature against it.
+          if git grep -nIE "$patterns" -- . \
+               ':!.env.example' ':!README.md' ':!.github/workflows/ci.yml' \
+             | grep -v -e 'AKIAIOSFODNN7EXAMPLE'; then
+            echo "::error::something that looks like a credential or a private hostname is committed"
+            exit 1
+          fi
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t journal:ci .
+      # The image must at least start and answer its own healthcheck route
+      # against an empty volume, which exercises the seed.
+      - run: |
+          docker run -d --name app -p 4176:4176 -e HOST=0.0.0.0 journal:ci
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4176/api/state > /dev/null; then echo up; exit 0; fi
+            sleep 1
+          done
+          docker logs app
+          exit 1

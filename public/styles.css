@@ -1,0 +1,354 @@
+/* ==========================================================================
+   Journal — black and near-black grounds, white text, one configurable
+   accent. The same shell as the finances and tracker apps, so the three read
+   as one set of tools. The accent is set from config.json at load; the values
+   here are the fallback so the page never flashes unstyled.
+
+   Desktop first. The base rules are the wide layout; the phone overrides sit
+   at the end of the file, where at equal specificity the later rule wins.
+   ========================================================================== */
+
+:root {
+  --paper: #0a0a0b;
+  --card: #141417;
+  --card-sunk: #1c1c20;
+  --card-raised: #202026;
+
+  --ink: #f4f4f6;
+  --ink-soft: #a2a2ad;
+  --ink-faint: #6b6b76;
+
+  --rule: #2c2c33;
+  --rule-soft: #232329;
+
+  /* Overwritten from config.theme.accent at boot. */
+  --accent: #A8C66C;
+  --accent-wash: rgba(168, 198, 108, 0.16);
+  --accent-dim: rgba(168, 198, 108, 0.55);
+
+  --gain: #4ec9a5;
+  --gain-wash: rgba(78, 201, 165, 0.16);
+  --warn: #e8705f;
+  --warn-wash: rgba(232, 112, 95, 0.16);
+  --caution: #d8a13a;
+  /* A clean day: enough green to read as green on the card, quiet enough
+     that a red day is the thing the eye lands on. The used state is the
+     solid --warn, so the mark sits on the exception, not the rule. */
+  --clean-fill: rgba(78, 201, 165, 0.34);
+
+  --display: "Bahnschrift", "Avenir Next Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --mono: "SFMono-Regular", "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+
+  --gap: 20px;
+  --radius: 3px;
+  /* One height for every control that shares a filter row. Each kind of
+     control derives its height differently — padding, line-height, a border
+     — so they are matched by token rather than by eye. */
+  --control-h: 31px;
+  --wide: 1240px;
+
+  color-scheme: dark;
+  accent-color: var(--accent);
+}
+
+* { box-sizing: border-box; }
+/* An explicit `display` beats the UA [hidden] rule, and .frame is display: grid. */
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding: 0 24px 64px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+[data-num], .ledger, input[type="number"] {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--display); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+}
+.r { text-align: right; }
+.c { text-align: center; }
+.muted { color: var(--ink-faint); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* --- masthead ------------------------------------------------------------ */
+
+.masthead {
+  max-width: var(--wide); margin: 0 auto; padding: 32px 0 20px;
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: var(--gap); border-bottom: 1px solid var(--accent-dim);
+}
+.masthead h1 {
+  margin: 0; font-family: var(--display); font-size: clamp(30px, 5vw, 46px); font-weight: 700;
+  letter-spacing: -0.005em; text-transform: uppercase; color: var(--accent);
+}
+.masthead-emoji { font-family: initial; font-size: 0.72em; letter-spacing: normal; text-transform: none; vertical-align: 0.06em; margin-left: 2px; }
+.masthead-chips { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+
+.chip {
+  display: flex; flex-direction: column; gap: 1px; padding: 8px 12px; min-width: 132px;
+  background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius);
+}
+.chip-label { font-family: var(--display); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.chip-value { font-family: var(--mono); font-size: 17px; font-weight: 600; color: var(--ink); }
+.chip-source { font-size: 11px; color: var(--ink-faint); }
+.chip.is-warn { border-color: var(--warn); box-shadow: inset 3px 0 0 var(--warn); }
+.chip.is-warn .chip-value { color: var(--warn); }
+
+/* --- tabs ---------------------------------------------------------------- */
+
+.tabs { max-width: var(--wide); margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 12px 0 0; }
+.tab {
+  font-family: var(--display); font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 8px 18px; background: transparent; color: var(--ink-soft);
+  border: 1px solid transparent; border-radius: var(--radius) var(--radius) 0 0;
+  cursor: pointer; text-decoration: none;
+}
+.tab:hover { color: var(--ink); }
+.tab.is-active { background: var(--card); border-color: var(--rule); border-bottom-color: var(--card); color: var(--accent); }
+/* The save status lives on the tab row, in the space the tabs leave. */
+.tab-status { margin-left: auto; font-size: 12px; color: var(--ink-faint); }
+
+/* --- notice / banner ----------------------------------------------------- */
+
+.notice, .banner { max-width: var(--wide); margin: 14px auto 0; padding: 10px 14px; border-radius: var(--radius); font-size: 14px; }
+.notice { background: var(--warn-wash); border: 1px solid var(--warn); color: var(--warn); }
+.banner { background: var(--accent-wash); border: 1px solid var(--accent-dim); color: var(--ink); grid-column: 1 / -1; }
+.banner strong { color: var(--accent); }
+
+/* --- layout -------------------------------------------------------------- */
+
+.frame { max-width: var(--wide); margin: 0 auto; padding-top: var(--gap); display: grid; grid-template-columns: 1fr; gap: var(--gap); }
+/* Grid children default to min-content width; without this a wide table
+   pushes the page past the viewport and the masthead resizes between tabs. */
+.frame > * { min-width: 0; }
+
+.block { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 20px 20px; }
+.block-head { margin-bottom: 12px; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px; }
+.block-head .eyebrow { flex: none; }
+.block-note { margin: 4px 0 0; font-size: 13px; color: var(--ink-soft); flex: 1 1 260px; }
+.verdict { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--rule-soft); font-size: 14px; color: var(--ink-soft); }
+.verdict strong { color: var(--accent); }
+.empty-state { padding: 28px 4px; text-align: center; color: var(--ink-faint); font-size: 14px; border: 1px dashed var(--rule-soft); border-radius: var(--radius); }
+
+/* --- filter / toolbar row ------------------------------------------------ */
+/* One line on a desktop screen: exactly one control grows (the search); the
+   rest keep their natural width, and every one of them is --control-h tall. */
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 14px; }
+.filter-set { display: flex; flex-wrap: wrap; gap: 5px; }
+.filter-search { flex: 1 1 200px; display: flex; min-width: 0; }
+.filter-search input, .filter-row select {
+  width: 100%; height: var(--control-h); padding: 0 9px; font-size: 14px; font-family: var(--body);
+  background: var(--card-sunk); color: var(--ink); border: 1px solid var(--rule); border-radius: var(--radius);
+}
+.filter-row select { width: auto; font-size: 13px; padding: 0 7px; }
+.filter-row .solid-button, .filter-row .ghost-button { height: var(--control-h); padding-top: 0; padding-bottom: 0; }
+.filter-note { font-size: 12.5px; color: var(--ink-faint); }
+/* A button keeps a one-glyph form for rows too narrow for its words. */
+.button-mark { display: none; }
+
+/* --- tables -------------------------------------------------------------- */
+
+.table-scroll { overflow-x: auto; }
+.ledger { width: 100%; border-collapse: collapse; font-size: 13.5px; color: var(--ink); }
+.ledger th {
+  text-align: left; font-family: var(--display); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+  padding: 0 10px 8px; border-bottom: 1px solid var(--accent-dim); white-space: nowrap;
+}
+.ledger th[data-sort] { cursor: pointer; user-select: none; }
+.ledger th[data-sort]:hover { color: var(--ink); }
+.sort-arrow { display: inline-block; width: 1em; margin-left: 3px; opacity: 0; }
+.ledger th[aria-sort] .sort-arrow { opacity: 1; }
+.ledger th.r { text-align: right; }
+.ledger th.c { text-align: center; }
+.ledger td { padding: 7px 10px; border-bottom: 1px solid var(--rule-soft); height: 56px; vertical-align: middle; }
+.ledger tbody tr:last-child td { border-bottom: none; }
+.ledger tr.is-total td { border-top: 1px solid var(--accent-dim); font-weight: 600; }
+.ledger th.nowrap, .ledger td.nowrap { white-space: nowrap; width: 1%; }
+.ledger tr.is-muted td { color: var(--ink-faint); }
+.ledger tbody tr.is-clickable { cursor: pointer; }
+.ledger tbody tr.is-clickable:hover td { background: var(--card-sunk); }
+.ledger .flag { font-size: 11px; font-family: var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+.ledger .flag.warn { color: var(--warn); }
+.ledger .flag.gain { color: var(--gain); }
+.ledger .flag.soft { color: var(--ink-faint); }
+
+/* --- forms --------------------------------------------------------------- */
+
+.entry-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+.entry-row:last-child { margin-bottom: 0; }
+.entry-row label {
+  display: flex; flex-direction: column; gap: 3px; min-width: 0;
+  font-family: var(--display); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft);
+}
+.entry-row select { min-width: 0; width: 100%; }
+.entry-row label.grow { flex: 1 1 180px; }
+.entry-row label.wide { flex: 1 1 100%; }
+/* A lead row: the word-and-menu controls take the slack, the figures keep
+   their width — so a pair like latitude and longitude stays side by side. */
+.entry-row.is-lead label.fill { flex: 1 1 160px; min-width: 0; }
+.entry-row.is-lead label.fill input, .entry-row.is-lead label.fill select { width: 100%; max-width: none; }
+.entry-row.is-lead label.pin { flex: 0 1 auto; min-width: 0; }
+.entry-row input, .entry-row select, .entry-row textarea {
+  font-family: var(--body); font-size: 14px; padding: 6px 8px;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: var(--card-sunk); color: var(--ink); text-transform: none; letter-spacing: 0;
+}
+.entry-row textarea { resize: vertical; min-height: 62px; }
+.entry-row input[type="number"] { font-family: var(--mono); max-width: 120px; }
+.entry-row input.coord { font-family: var(--mono); max-width: 130px; }
+.entry-row input:disabled, .entry-row select:disabled { color: var(--ink-faint); background: var(--paper); cursor: not-allowed; }
+
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.solid-button, .ghost-button {
+  font-family: var(--display); font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 8px 16px; border-radius: var(--radius); cursor: pointer;
+}
+.solid-button { background: var(--accent); color: #0a0a0b; border: 1px solid var(--accent); }
+.solid-button:hover:not(:disabled) { filter: brightness(1.12); }
+.solid-button:disabled { background: var(--rule); border-color: var(--rule); color: var(--ink-faint); cursor: not-allowed; }
+.ghost-button { background: transparent; color: var(--ink); border: 1px solid var(--rule); }
+.ghost-button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.ghost-button:disabled { color: var(--ink-faint); cursor: not-allowed; }
+.ghost-button.is-danger:hover { border-color: var(--warn); color: var(--warn); }
+.solid-button.is-small, .ghost-button.is-small { padding: 5px 10px; font-size: 11px; letter-spacing: 0.1em; }
+.link-button { background: none; border: none; padding: 0; color: var(--ink-faint); cursor: pointer; font-size: 15px; line-height: 1; }
+.link-button:hover { color: var(--warn); }
+
+.form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 4px; }
+.form-actions .spacer { margin-right: auto; }
+.save-status { font-size: 12px; color: var(--ink-faint); }
+
+/* --- legend -------------------------------------------------------------- */
+
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 18px; margin-top: 14px; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-soft); }
+.legend-swatch { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+.legend-value { font-family: var(--mono); color: var(--ink-faint); }
+
+/* --- sheet --------------------------------------------------------------- */
+
+.scrim {
+  position: fixed; inset: 0; z-index: 40; background: rgba(6, 6, 7, 0.82);
+  display: grid; place-items: start center; padding: 24px 16px 48px; overflow-y: auto; overscroll-behavior: contain;
+}
+.sheet { width: 100%; max-width: 820px; min-width: 0; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px 20px 20px; }
+.sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+.sheet-title { margin: 4px 0 0; font-family: var(--display); font-size: 26px; font-weight: 700; text-transform: uppercase; letter-spacing: -0.005em; color: var(--ink); }
+.sheet-sub { margin: 2px 0 0; font-size: 14px; color: var(--ink-faint); }
+.sheet-close { flex: none; background: transparent; border: 1px solid var(--rule); border-radius: var(--radius); color: var(--ink-soft); width: 30px; height: 30px; cursor: pointer; font-size: 16px; line-height: 1; }
+.sheet-close:hover { color: var(--warn); border-color: var(--warn); }
+.sheet-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule-soft); }
+.sheet-section:first-of-type { border-top: none; padding-top: 0; }
+
+/* --- habits: streak tiles ------------------------------------------------ */
+
+.streaks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap); }
+.streak { min-width: 0; }
+.streak + .streak { border-left: 1px solid var(--rule-soft); padding-left: var(--gap); }
+.streak-figure { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
+.streak-value { font-family: var(--display); font-size: clamp(44px, 7vw, 68px); font-weight: 700; line-height: 1; letter-spacing: -0.01em; color: var(--ink); }
+.streak-unit { font-family: var(--display); font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+.streak-since { margin-top: 6px; font-size: 13px; color: var(--ink-faint); }
+
+/* --- habits: calendar ---------------------------------------------------- */
+/* The month row holds the controls on the left and the key to the halves on
+   the right, so the grid starts on the second row of the block. */
+.month-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 14px; }
+.month-row .ghost-button { height: var(--control-h); padding-top: 0; padding-bottom: 0; }
+.month-row .ghost-button:not(.is-small) { padding-left: 12px; padding-right: 12px; font-size: 16px; line-height: 1; }
+.month-title { margin: 0; min-width: 11ch; text-align: center; font-family: var(--display); font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; color: var(--ink); }
+.month-row .legend { margin: 0 0 0 auto; }
+/* The key draws each habit as the half of a day it occupies. */
+.legend-swatch.is-half { width: 22px; border-radius: var(--radius); background: linear-gradient(to right, var(--clean-fill) 50%, var(--card-sunk) 50%); }
+.legend-swatch.is-half.is-right { background: linear-gradient(to right, var(--card-sunk) 50%, var(--clean-fill) 50%); }
+
+.calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.weekday { padding-bottom: 4px; text-align: center; font-family: var(--display); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+/* A fixed height rather than a square: at the frame's full width a square
+   day is 170px tall and six weeks of them run past the fold. */
+.day { position: relative; height: 64px; border-radius: var(--radius); overflow: hidden; background: var(--card-sunk); }
+.day.is-pad { background: transparent; }
+.day.is-today { box-shadow: inset 0 0 0 1px var(--accent); }
+/* The number floats over the left half so a day needs no strip of its own;
+   pointer-events off so the half under it still takes the click. */
+.day-num { position: absolute; top: 3px; left: 6px; z-index: 1; font-family: var(--mono); font-size: 11px; color: var(--ink); opacity: 0.85; pointer-events: none; }
+.day.is-today .day-num { color: var(--accent); opacity: 1; font-weight: 700; }
+.day.is-future .day-num { color: var(--ink-faint); }
+.day-halves { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; height: 100%; }
+.half { border: none; padding: 0; margin: 0; background: var(--card-sunk); cursor: pointer; }
+.half.is-clean { background: var(--clean-fill); }
+.half.is-used { background: var(--warn); }
+.half:hover:not(:disabled) { filter: brightness(1.18); }
+.half:disabled { cursor: default; background: var(--card-sunk); }
+.half:focus-visible { outline-offset: -2px; }
+
+/* --- wide screens -------------------------------------------------------- */
+
+@media (min-width: 900px) {
+  .frame { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Blocks are full width unless they opt out with .is-half: charts, tables
+     and forms all read better with the room. */
+  .frame > .block:not(.is-half), .banner { grid-column: 1 / -1; }
+}
+
+/* --- narrow screens ------------------------------------------------------ */
+/* Kept at the end: these override base rules above, and at equal specificity
+   the later rule wins. */
+
+@media (max-width: 600px) {
+  body { padding: 0 16px 48px; }
+
+  /* Two chips per row, each filling half. Hidden altogether with
+     .is-desktop-only when they are not why the app was opened. */
+  .masthead-chips { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 10px; }
+  .masthead-chips.is-desktop-only { display: none; }
+  .chip { min-width: 0; }
+  .chip-value { overflow-wrap: anywhere; }
+
+  /* A filter row on a phone is a grid, so each control fills the width it is
+     given rather than the width of its longest word. The search takes a
+     whole row; --filter-cols sets how many controls share the next. */
+  .filter-row { display: grid; grid-template-columns: repeat(var(--filter-cols, 3), minmax(0, 1fr)); gap: 6px; }
+  .filter-row .filter-search { grid-column: 1 / -1; }
+  .filter-row .filter-set, .filter-row select { min-width: 0; width: 100%; }
+  .filter-row.is-nowrap { display: flex; flex-wrap: nowrap; }
+  .filter-row.is-nowrap .filter-search { flex: 1 1 auto; }
+  .button-word { display: none; }
+  .button-mark { display: inline; }
+
+  /* Two and two: the basis is small enough that two fit a 301px card
+     (2 × 110 + gap), large enough that three cannot. */
+  .entry-row.is-lead label.fill, .entry-row.is-lead label.pin { flex: 1 1 110px; }
+  .entry-row.is-lead label.pin input.coord { width: 100%; max-width: none; }
+  .entry-row label.grow { flex: 1 1 100%; }
+
+  .ledger th.is-wide, .ledger td.is-wide { display: none; }
+  .ledger td { padding: 7px 6px; }
+
+  .streaks { gap: 14px; }
+  .streak + .streak { padding-left: 14px; }
+  .streak-value { font-size: 40px; }
+  /* The key drops under the month controls: with it on the same line the
+     title has no room to stay on one. */
+  .month-row .legend { flex-basis: 100%; margin-left: 0; }
+  .day { height: 48px; }
+  .day-num { top: 2px; left: 4px; font-size: 10px; }
+
+  .scrim { padding: 0; }
+  .sheet { border: none; border-radius: 0; min-height: 100%; }
+}

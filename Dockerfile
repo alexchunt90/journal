@@ -1,0 +1,31 @@
+# Zero dependencies, so there is nothing to install — just the runtime, the
+# server, and the static files.
+FROM node:22-alpine
+
+WORKDIR /app
+COPY server.js ./
+COPY lib ./lib
+COPY public ./public
+# The seed for an empty store. A fresh volume, or a brand new bucket, opens on
+# made-up data rather than a blank page.
+COPY example ./example
+
+# State lives on a mounted volume, not in the image. It must be a directory:
+# saves write a temp file and rename over the target, which fails against a
+# bind-mounted single file.
+ENV STATE_DIR=/state \
+    HOST=0.0.0.0 \
+    PORT=4176
+
+EXPOSE 4176
+
+# The directory has to exist and belong to the unprivileged user before the
+# switch below: without a volume mounted over it, the server would otherwise
+# try to create /state itself and be refused. A bind mount replaces it.
+RUN mkdir -p /state && chown node:node /state
+USER node
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/api/state').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "server.js"]

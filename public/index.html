@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Journal</title>
+<link rel="stylesheet" href="styles.css" />
+<!-- A data: favicon needs no file. iOS Safari ignores it and wants a PNG
+     apple-touch-icon; add one when the app earns a home-screen bookmark. -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📓</text></svg>" />
+</head>
+<body>
+
+<!-- No chips: the streaks are the reason the app is opened, and on a phone
+     the masthead chips are hidden, so they live in the view as tiles. -->
+<header class="masthead">
+  <div class="masthead-title">
+    <h1 id="masthead-title">Journal <span class="masthead-emoji" role="img" aria-label="">📓</span></h1>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <!-- Real links, so a middle click or ⌘-click opens a view in a new tab. -->
+  <a role="tab" class="tab is-active" data-view="habits" href="?view=habits">Habits</a>
+  <span class="tab-status" id="save-status" role="status"></span>
+</nav>
+
+<p class="notice" id="notice" hidden></p>
+
+<!-- ===================================================================== -->
+<main class="frame" id="view-habits">
+
+  <!-- One tile per habit, filled by renderStreaks(). Two side by side at
+       every width: the figures are short, and a phone is wide enough for
+       two three-digit numbers with room to spare. -->
+  <section class="block" id="streaks-block">
+    <div class="streaks" id="streaks"></div>
+  </section>
+
+  <section class="block" id="calendar-block">
+    <!-- One row: the month controls on the left, the key to the halves
+         pushed right. On a phone the key wraps under the controls. -->
+    <div class="month-row">
+      <button type="button" class="ghost-button" id="month-prev" aria-label="Previous month">‹</button>
+      <h2 class="month-title" id="month-title"></h2>
+      <button type="button" class="ghost-button" id="month-next" aria-label="Next month">›</button>
+      <button type="button" class="ghost-button is-small" id="month-today">Today</button>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch is-half is-left"></span>Alcohol</span>
+        <span class="legend-item"><span class="legend-swatch is-half is-right"></span>Cannabis</span>
+      </div>
+    </div>
+    <div class="calendar" id="calendar"></div>
+  </section>
+
+</main>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"></div>
+</div>
+
+<script src="model.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

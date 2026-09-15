@@ -1,0 +1,25 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Dependencies (there are none, and none are wanted)
+node_modules/
+
+# Editor / OS cruft
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Atomic-write leftovers
+*.tmp
+
+# Runtime state when running in a container. STATE_DIR points here, the
+# container writes it as uid 1000, and git must never own these files.
+state/
+
+# Your data. The app writes these; the repo must never carry them. The leading
+# slash pins each pattern to the root so the stubs in example/ stay tracked.
+# A fresh checkout has neither, and the server seeds both from example/.
+/config.json
+/data/

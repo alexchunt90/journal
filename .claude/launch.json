@@ -1,0 +1,25 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "journal",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "port": 4176
+    },
+    {
+      "name": "journal-scratch",
+      "_comment": "The app against throwaway state: seeded from example/, never the bucket .env points at.",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "S3_BUCKET=",
+        "STATE_DIR=/tmp/journal-scratch-state",
+        "PORT=4181",
+        "HOST=127.0.0.1",
+        "node",
+        "server.js"
+      ],
+      "port": 4181
+    }
+  ]
+}

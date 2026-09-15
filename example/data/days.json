@@ -1,0 +1,14 @@
+[
+  {
+    "id": "2026-08-14",
+    "alcohol": true,
+    "cannabis": true,
+    "version": 1
+  },
+  {
+    "id": "2026-08-29",
+    "alcohol": true,
+    "cannabis": false,
+    "version": 1
+  }
+]
