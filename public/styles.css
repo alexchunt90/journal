@@ -22,9 +22,9 @@
   --rule-soft: #232329;
 
   /* Overwritten from config.theme.accent at boot. */
-  --accent: #A8C66C;
-  --accent-wash: rgba(168, 198, 108, 0.16);
-  --accent-dim: rgba(168, 198, 108, 0.55);
+  --accent: #87CEEB;
+  --accent-wash: rgba(135, 206, 235, 0.16);
+  --accent-dim: rgba(135, 206, 235, 0.55);
 
   --gain: #4ec9a5;
   --gain-wash: rgba(78, 201, 165, 0.16);
